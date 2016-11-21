@@ -29,11 +29,8 @@ void usage(char **argv)
 int main(int argc, char *argv[])
 {
   FILE *procinfo;
-  char buffer[8192];
-
-  unsigned long rxq, txq, time_len, retr, inode;
-  int local_port, rem_port, d, state, uid, timer_run, timeout, check_port, check_uid, ret;
-  char rem_addr[128], local_addr[128], more[512], *check_addr;
+  int check_port, check_uid, ret;
+  char *check_addr;
 
   if (!argv[1]) {
     usage(argv);
@@ -74,7 +71,12 @@ int main(int argc, char *argv[])
 
   ret = 1;
   do {
+    char buffer[8192];
+
     if (fgets(buffer, sizeof(buffer), procinfo)) {
+      unsigned long rxq, txq, time_len, retr, inode;
+      int local_port, rem_port, d, state, uid, timer_run, timeout;
+      char rem_addr[128], local_addr[128], more[512];
       struct sockaddr_in localaddr;
       char *localaddr_str;
 
