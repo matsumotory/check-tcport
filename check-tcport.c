@@ -7,6 +7,21 @@
 
 #define PROC_NET_TCP "/proc/net/tcp"
 
+enum {
+    TCP_ESTABLISHED = 1,
+    TCP_SYN_SENT, 
+    TCP_SYN_RECV,
+    TCP_FIN_WAIT1,
+    TCP_FIN_WAIT2,
+    TCP_TIME_WAIT,
+    TCP_CLOSE,
+    TCP_CLOSE_WAIT,
+    TCP_LAST_ACK,
+    TCP_LISTEN,
+    TCP_CLOSING     /* now a valid state */
+};
+
+
 void usage(char **argv)
 {
   fprintf(stderr, "%s ipaddr port uid\n", argv[0]);
@@ -73,8 +88,8 @@ int main(int argc, char *argv[])
       ((struct sockaddr *)&localaddr)->sa_family = AF_INET;
       localaddr_str = inet_ntoa(localaddr.sin_addr);
 
-      if ((check_port == local_port) && (uid == check_uid) && (strcmp(localaddr_str, check_addr) == 0)) {
-        printf("Listen: %s:%d by uid=%d\n", inet_ntoa(localaddr.sin_addr), local_port, uid);
+      if ((state == TCP_LISTEN) && (check_port == local_port) && (uid == check_uid) && (strcmp(localaddr_str, check_addr) == 0)) {
+        printf("state=TCP_LISTEN ipaddr=%s port=%d inode=%ld uid=%d\n", inet_ntoa(localaddr.sin_addr), local_port, inode, uid);
         ret = 0;
       }
     }
