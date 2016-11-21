@@ -14,6 +14,9 @@ make
 ./check-tcport ipaddr port uid
 ```
 
+- return 0 when listening by your parameters
+- return 1 when not listening by your parameters
+
 ```
 $ ./netstat-port 0.0.0.0 8080 808000
 Listen: 0.0.0.0:8080 by uid=808000
