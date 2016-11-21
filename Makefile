@@ -1,2 +1,2 @@
 all:
-	gcc -O3 -Wall check-tcport.c  -o check-tcport
+	gcc -O1 -Wall check-tcport.c  -o check-tcport
