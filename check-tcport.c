@@ -18,9 +18,8 @@ int main(int argc, char *argv[])
   char buffer[8192];
 
   unsigned long rxq, txq, time_len, retr, inode;
-  int local_port, rem_port, d, state, uid, timer_run, timeout, check_port, check_uid;
+  int local_port, rem_port, d, state, uid, timer_run, timeout, check_port, check_uid, ret;
   char rem_addr[128], local_addr[128], more[512], *check_addr;
-  ;
 
   if (!argv[1]) {
     usage(argv);
@@ -59,6 +58,7 @@ int main(int argc, char *argv[])
     exit(errno);
   }
 
+  ret = 1;
   do {
     if (fgets(buffer, sizeof(buffer), procinfo)) {
       struct sockaddr_in localaddr;
@@ -75,10 +75,11 @@ int main(int argc, char *argv[])
 
       if ((check_port == local_port) && (uid == check_uid) && (strcmp(localaddr_str, check_addr) == 0)) {
         printf("Listen: %s:%d by uid=%d\n", inet_ntoa(localaddr.sin_addr), local_port, uid);
+        ret = 0;
       }
     }
 
   } while (!feof(procinfo));
 
-  return 0;
+  return ret;
 }
