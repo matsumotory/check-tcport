@@ -26,10 +26,44 @@ void usage(char **argv)
   fprintf(stderr, "%s ipaddr port uid\n", argv[0]);
 }
 
+static int search_tcp_port(FILE *procinfo, char *check_addr, int check_port, int check_uid)
+{
+  do {
+    char buffer[8192];
+
+    if (fgets(buffer, sizeof(buffer), procinfo)) {
+      unsigned long rxq, txq, time_len, retr, inode;
+      int local_port, rem_port, d, state, uid, timer_run, timeout;
+      char rem_addr[128], local_addr[128], more[512];
+      struct sockaddr_in localaddr;
+      char *localaddr_str;
+
+      sscanf(buffer, "%d: %64[0-9A-Fa-f]:%X %64[0-9A-Fa-f]:%X %X %lX:%lX %X:%lX "
+                     "%lX %d %d %ld %512s\n",
+             &d, local_addr, &local_port, rem_addr, &rem_port, &state, &txq, &rxq, &timer_run, &time_len, &retr, &uid,
+             &timeout, &inode, more);
+
+      sscanf(local_addr, "%X", &((struct sockaddr_in *)&localaddr)->sin_addr.s_addr);
+      ((struct sockaddr *)&localaddr)->sa_family = AF_INET;
+      localaddr_str = inet_ntoa(localaddr.sin_addr);
+
+      if ((state == TCP_LISTEN) && (check_port == local_port) && (uid == check_uid) &&
+          (strcmp(localaddr_str, check_addr) == 0)) {
+        printf("state=TCP_LISTEN ipaddr=%s port=%d inode=%ld uid=%d\n", inet_ntoa(localaddr.sin_addr), local_port,
+               inode, uid);
+        return 0;
+      }
+    }
+
+  } while (!feof(procinfo));
+
+  return 1;
+}
+
 int main(int argc, char *argv[])
 {
   FILE *procinfo;
-  int check_port, check_uid, ret;
+  int check_port, check_uid;
   char *check_addr;
 
   if (!argv[1]) {
@@ -69,35 +103,5 @@ int main(int argc, char *argv[])
     exit(errno);
   }
 
-  ret = 1;
-  do {
-    char buffer[8192];
-
-    if (fgets(buffer, sizeof(buffer), procinfo)) {
-      unsigned long rxq, txq, time_len, retr, inode;
-      int local_port, rem_port, d, state, uid, timer_run, timeout;
-      char rem_addr[128], local_addr[128], more[512];
-      struct sockaddr_in localaddr;
-      char *localaddr_str;
-
-      sscanf(buffer, "%d: %64[0-9A-Fa-f]:%X %64[0-9A-Fa-f]:%X %X %lX:%lX %X:%lX "
-                     "%lX %d %d %ld %512s\n",
-             &d, local_addr, &local_port, rem_addr, &rem_port, &state, &txq, &rxq, &timer_run, &time_len, &retr, &uid,
-             &timeout, &inode, more);
-
-      sscanf(local_addr, "%X", &((struct sockaddr_in *)&localaddr)->sin_addr.s_addr);
-      ((struct sockaddr *)&localaddr)->sa_family = AF_INET;
-      localaddr_str = inet_ntoa(localaddr.sin_addr);
-
-      if ((state == TCP_LISTEN) && (check_port == local_port) && (uid == check_uid) &&
-          (strcmp(localaddr_str, check_addr) == 0)) {
-        printf("state=TCP_LISTEN ipaddr=%s port=%d inode=%ld uid=%d\n", inet_ntoa(localaddr.sin_addr), local_port,
-               inode, uid);
-        ret = 0;
-      }
-    }
-
-  } while (!feof(procinfo));
-
-  return ret;
+  return search_tcp_port(procinfo, check_addr, check_port, check_uid);
 }
