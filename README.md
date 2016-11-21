@@ -10,19 +10,19 @@ make
 
 ## example
 
-```
-./check-tcport ipaddr port uid
-```
-
 - return 0 when listening by your parameters
 - return 1 when not listening by your parameters
 
 ```
-$ ./netstat-port 0.0.0.0 8080 808000
-Listen: 0.0.0.0:8080 by uid=808000
+./check-tcport ipaddr port uid
+```
 
-$ netstat -lnt | grep 8080
-tcp        0      0 0.0.0.0:8080                0.0.0.0:*                   LISTEN      
+```
+$ ./check-tcport 0.0.0.0 8080 808000
+state=TCP_LISTEN ipaddr=0.0.0.0 port=8080 inode=3760955 uid=808000
+
+$ netstat -lnte | grep '0.0.0.0:8080\|808000'
+tcp        0      0 0.0.0.0:8080                0.0.0.0:*                   LISTEN      808000     3760955
 ```
 
 ## time
@@ -35,10 +35,11 @@ real    0m0.010s
 user    0m0.001s
 sys     0m0.011s
 
-$ time ./netstat-port 0.0.0.0 8080 808000
-Listen: 0.0.0.0:8080 by uid=808000
+$ time ./check-tcport 0.0.0.0 8080 808000
+state=TCP_LISTEN ipaddr=0.0.0.0 port=8080 inode=3760955 uid=808000
 
-real    0m0.006s
+real    0m0.005s
 user    0m0.000s
-sys     0m0.006s
+sys     0m0.005s
 ```
+
