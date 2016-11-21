@@ -10,8 +10,8 @@ make
 
 ## example
 
-- return 0 when listening by your parameters
-- return 1 when not listening by your parameters
+- return value is 0 when listening with your parameters
+- return value is 1 when not listening with your parameters
 
 ```
 ./check-tcport ipaddr port uid
